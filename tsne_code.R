@@ -3,7 +3,7 @@
 
 #  Make sure you 'paste' your _words.csv and _scores files together into data_for_r.tsv:
 
-data_for_r <- read.delim("data/data_for_r.tsv", header=FALSE)
+data_for_r <- read.delim("data_for_r.tsv", header=FALSE)
 
 # a little cleaning, just in case
 mydata <- unique(data_for_r)
@@ -13,10 +13,10 @@ row.names(mydata) <- mydata$V1
 library(Rtsne)
 
 # need to get rid of the word column again
-rtsne_out <- Rtsne(as.matrix(mydata[,2:201]), theta=0.3)
+rtsne_out <- Rtsne(as.matrix(mydata[,2:101]), theta=0.3)
 
 plot(rtsne_out$Y, t='n', main="BarnesHut t-SNE")
-text(rtsne_out$Y, labels=rownames(mydata), cex=0.6, col=rgb(0,0,0,0.5))
+text(rtsne_out$Y, labels=rownames(mydata), cex=1, col=rgb(0,0,0,0.5))
 
 library(tsne)
 
@@ -25,11 +25,11 @@ x <- 0
 epc <- function(x) {
   x <<- x + 1
   plot(x, t='n', main="T-SNE")
-  text(x, labels=rownames(mydata), cex=0.6, col=rgb(0, 0, 0, 0.5))
+  text(x, labels=rownames(mydata), cex=1, col=rgb(0, 0, 0, 0.5))
 }
 
 # run tsne (maximum iterations:500, callback/graph every 200 epochs, target dimension k=25)
 # Note: this takes a long time and seems to do nothing/freeze for some cases. Beware.
-tsne_data <- tsne(mydata[,2:201], k=25, epoch_callback=epc, max_iter=500, epoch=200)
+tsne_data <- tsne(mydata[,2:101], k=25, epoch_callback=epc, max_iter=500, epoch=200)
 
 

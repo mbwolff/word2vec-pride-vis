@@ -9,6 +9,11 @@ from pattern.en import tag as ptag
 import string
 import tsne  # local copy in the repo
 
+focusText = 'texts/TrumpTweets2018.txt'
+filePref = 'data/trumpTweets'
+modelName = '_model_trumpTweets_allwordsmin3'
+tags = ['JJ', 'RB', 'NN', 'VB', 'VBZ', 'VBP', 'VBD', 'VBN', 'VBG', 'PRP']
+
 def tag_by_line(line, tags):
     """ Look for only the words with those tags """
     words = []
@@ -31,7 +36,7 @@ def cleanup(text):
     return data
 
 
-def cleanup_and_pos(text, pos=['NN']):
+def cleanup_and_pos(text, pos):
     """
     Run the cleanup function, convert to a list of tag types, clean out misc stuff left.
     Also converts back to a space sep string of the text we want in the model/output only
@@ -50,7 +55,7 @@ import os
 import re
 
 class MySentences(object):
-    def __init__(self, dirname, tags=['NN']):
+    def __init__(self, dirname, tags):
         self.dirname = dirname
         self.tags = tags
     def __iter__(self):
@@ -105,7 +110,7 @@ def cap_me(word, capflag):
     else:
         return word
 
-def build_dict_write_file(model, outputtextfile, outputdatafile, tags=['NN']):
+def build_dict_write_file(model, outputtextfile, outputdatafile, tags):
     """ Writes out the labeled text with word swaps, returns datadict """
 
     screen_outs = ['CHAPTER', 'chapter', 'Chapter', '', ',', 'xi']  # too common and not useful
@@ -113,7 +118,8 @@ def build_dict_write_file(model, outputtextfile, outputdatafile, tags=['NN']):
 
     print tags
 
-    with open('books/austen_pride.txt', 'r') as handle:
+    # with open('books/austen_pride.txt', 'r') as handle:
+    with open(focusText, 'r') as handle:
         lines = handle.read()
         lines = lines.split('\n\r')
         full_text = ''
@@ -193,21 +199,21 @@ def build_dict_write_file(model, outputtextfile, outputdatafile, tags=['NN']):
     print "Wrote out to data directory:", outputtextfile, outputdatafile
     return datadict
 
-def run_all(tags=['NN'], filepref='data/pride_NN'):
+def run_all(tags, filepref):
 
     # notice here i require at least 2 uses of each word in the corpus - reduces noise
 
     # uncomment the version of the model you want to try: tag limited, or all words.
     #model = gensim.models.Word2Vec(MySentences('books', tags=tags), min_count=2, size=200, workers=2)
-    model = gensim.models.Word2Vec(DirOfPlainTextCorpus('books'), min_count=3, workers=2)
-    model.save(filepref + '_model_austen_allwordsmin3')
+    model = gensim.models.Word2Vec(DirOfPlainTextCorpus('texts'), min_count=3, workers=4)
+    model.save(filepref + modelName)
 
     # if you want to save time and use a saved file, comment out the above and uncomment this with right path
     #model = gensim.models.Word2Vec.load('data/pride_NNPRP_model_austen_all')
 
     # does the text tagging and word replacement
     print tags
-    datadict = build_dict_write_file(model, filepref + '_labeled.txt', filepref + '_data.json', tags=tags)
+    datadict = build_dict_write_file(model, filepref + '_labeled.txt', filepref + '_data.json', tags)
 
     # tsne input files part
     make_score_files(model, datadict, filepref)
@@ -251,7 +257,7 @@ def do_tsne_files(coordsfilename, Y, labels, datadict, axis_off=True):
             #plt.text(x, y, label, size=8, alpha=0.5)
     print "wrote out", coordsfilename
 
-Y, labels, datadict, model = run_all(tags=['NN'], filepref='data/pride_NNAll3')
+Y, labels, datadict, model = run_all(tags, filePref)
 do_tsne_files('misc.tsv', Y, labels, datadict, axis_off=False)
 
 print model.most_similar(['husband'])
